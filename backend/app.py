@@ -85,23 +85,47 @@ def not_found(error = None):
     response.status_code = 404
     return response
 
+@app.route('/registration', methods=['POST'])
+def registration():
+    username = request.form['username']
+    email = request.form['email']
+    password = request.form['password']
+
+    # Check if the username and email are already taken
+    if mongo.db.users.find_one({'username': username}) or mongo.db.users.find_one({'email': email}):
+        return jsonify({'error': 'Username or email already taken'})
+
+    # Hash the password before storing it
+    hashed_password = generate_password_hash(password)
+
+    # Create a new user document in MongoDB
+    new_user = {
+        'username': username,
+        'email': email,
+        'password': hashed_password
+    }
+    mongo.db.users.insert_one(new_user)
+
+    # Redirect to the login page after successful registration
+    return redirect(url_for('login'))
+
 # @app.route('/regsiter', methods = ['POST', 'GET'])
 # def regsiter():
-    # username = request.form['username']
-    # password = request.form['password']
-    # email = request.form['email']
+#     username = request.form['username']
+#     password = request.form['password']
+#     email = request.form['email']
 
-    # if request.method == 'POST':
-    #     users = mongo.db.users
-    #     existing_user = users.find_one({'name' : request.form['username']})
-    #     if existing_user is None:
-    #         hashed_password = generate_password_hash(request.form['password'])
-    #         id = mongo.db.users.insert_one(
-    #          {'username': request.form['username'], 'email': request.form['email'], 'password': hashed_password}
-    #         )
-    #         return redirect(url_for('index'))
-    # else:
-    #     render_template('registration.html')
+#     if request.method == 'POST':
+#         users = mongo.db.users
+#         existing_user = users.find_one({'name' : request.form['username']})
+#         if existing_user is None:
+#             hashed_password = generate_password_hash(request.form['password'])
+#             id = mongo.db.users.insert_one(
+#              {'username': request.form['username'], 'email': request.form['email'], 'password': hashed_password}
+#             )
+#             return redirect(url_for('index'))
+#     else:
+#         render_template('registration.html')
 
 
 
