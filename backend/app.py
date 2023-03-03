@@ -1,11 +1,12 @@
 from flask import Flask, redirect, render_template, request, jsonify, Response, session, url_for
 from flask_pymongo import PyMongo
-from werkzeug.security import generate_password_hash
+from werkzeug.security import generate_password_hash, check_password_hash
 from bson import json_util
 from bson.objectid import ObjectId
-
+import secrets
 
 app = Flask(__name__)
+app.config['SECRET_KEY'] = secrets.token_hex(16)
 
 app.config["MONGO_URI"] = "mongodb://localhost:27017/Green"
 
@@ -85,67 +86,62 @@ def not_found(error = None):
     response.status_code = 404
     return response
 
-@app.route('/registration', methods=['POST'])
-def registration():
-    username = request.form['username']
-    email = request.form['email']
-    password = request.form['password']
+@app.route('/')
+def index():
+    return render_template('index.html')
 
-    # Check if the username and email are already taken
-    if mongo.db.users.find_one({'username': username}) or mongo.db.users.find_one({'email': email}):
-        return jsonify({'error': 'Username or email already taken'})
+@app.route('/success/<name>')
+def success(name):
+    return 'welcome %s' %name
 
-    # Hash the password before storing it
-    hashed_password = generate_password_hash(password)
-
-    # Create a new user document in MongoDB
-    new_user = {
-        'username': username,
-        'email': email,
-        'password': hashed_password
-    }
-    mongo.db.users.insert_one(new_user)
-
-    # Redirect to the login page after successful registration
-    return redirect(url_for('login'))
-
-# @app.route('/regsiter', methods = ['POST', 'GET'])
-# def regsiter():
-#     username = request.form['username']
-#     password = request.form['password']
-#     email = request.form['email']
-
-#     if request.method == 'POST':
-#         users = mongo.db.users
-#         existing_user = users.find_one({'name' : request.form['username']})
-#         if existing_user is None:
-#             hashed_password = generate_password_hash(request.form['password'])
-#             id = mongo.db.users.insert_one(
-#              {'username': request.form['username'], 'email': request.form['email'], 'password': hashed_password}
-#             )
-#             return redirect(url_for('index'))
-#     else:
-#         render_template('registration.html')
-
-
-
-
-    # if  username and email and password:
-    #     hashed_password = generate_password_hash(password)
-    #     id = mongo.db.users.insert_one(
-    #         {'username': username, 'email': email, 'password': hashed_password}
-    #     )
-    #     response = {
-    #         '_id': str(id),
-    #         'username': username,
-    #         'password': hashed_password,
-    #         'email': email
-    #     }
-    #     return jsonify(response)
+@app.route('/register', methods = ['POST', 'GET'])
+def register():
+    # if request.method == 'POST':
+    #     username = request.form['password']
+    #     return redirect(url_for('success', name = username))
     # else:
-    #     # Return error message
-    #     return jsonify({'message': 'All fields are required'})
+    #     username = request.args.get('username')
+    #     return render_template('register.html')
+     if request.method == 'POST':
+        # get form data
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+        
+        # check if user already exists
+        user = mongo.db.users.find_one({'email': email})
+        if user:
+            return render_template('register.html', error='User with that email already exists')
+        
+        # create new user
+        hashed_password = generate_password_hash(password)
+        mongo.db.users.insert_one({'username': username, 'email': email, 'password': hashed_password})
+        
+        return redirect(url_for('index'))
+        
+     return render_template('register.html')
     
+@app.route('/login', methods=['POST', 'GET'])
+def login():
+    if request.method == 'POST':
+        # get form data
+        username = request.form['username']
+        password = request.form['password']
+        
+        # retrieve user from database
+        user = mongo.db.users.find_one({'username': username})
+        if user:
+            # check if password is correct
+            if check_password_hash(user['password'], password):
+                # store user id in session
+                session['user_id'] = str(user['_id'])
+                return redirect(url_for('index'))
+        
+        # if login is unsuccessful
+        return render_template('login.html', error='Invalid username or password')
+        
+    return render_template('login.html')
+
 
 if __name__ == '__main__':
     app.run(debug=True)
