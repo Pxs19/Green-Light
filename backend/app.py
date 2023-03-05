@@ -4,9 +4,26 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from bson import json_util
 from bson.objectid import ObjectId
 import secrets
+from authlib.integrations.flask_client import OAuth
+
+
 
 app = Flask(__name__)
 app.config['SECRET_KEY'] = secrets.token_hex(16)
+oauth = OAuth(app)
+
+# google = oauth.register(
+#     name='google',
+#     client_id='',
+#     client_secret='',
+#     access_token_url='https://accounts.google.com/o/oauth2/token',
+#     access_token_params=None,
+#     authorize_url='https://accounts.google.com/o/oauth2/auth',
+#     authorize_params=None,
+#     api_base_url='https://www.googleapis.com/oauth2/v1/',
+#     userinfo_endpoint='https://openidconnect.googleapis.com/v1/userinfo',  # This is only needed if using openId to fetch user info
+#     client_kwargs={'scope': 'openid email profile'},
+# )
 
 app.config["MONGO_URI"] = "mongodb://localhost:27017/Green"
 
@@ -141,6 +158,22 @@ def login():
         return render_template('login.html', error='Invalid username or password')
         
     return render_template('login.html')
+
+from flask import url_for, render_template
+
+# @app.route('/google-login')
+# def login():
+#     redirect_uri = url_for('authorize', _external=True)
+#     return oauth.twitter.authorize_redirect(redirect_uri)
+
+# @app.route('/authorize')
+# def authorize():
+#     token = oauth.twitter.authorize_access_token()
+#     resp = oauth.twitter.get('account/verify_credentials.json')
+#     resp.raise_for_status()
+#     profile = resp.json()
+#     # do something with the token and profile
+#     return redirect('/')
 
 
 if __name__ == '__main__':
