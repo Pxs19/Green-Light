@@ -105,7 +105,7 @@ def not_found(error = None):
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('Home.html')
 
 @app.route('/success/<name>')
 def success(name):
@@ -152,6 +152,7 @@ def login():
             if check_password_hash(user['password'], password):
                 # store user id in session
                 session['user_id'] = str(user['_id'])
+                
                 return redirect(url_for('index'))
         
         # if login is unsuccessful
@@ -174,6 +175,31 @@ from flask import url_for, render_template
 #     profile = resp.json()
 #     # do something with the token and profile
 #     return redirect('/')
+
+@app.route('/profile', methods=['POST', 'GET'])
+def profile():
+
+    if request.method == 'POST':
+
+        username = request.form['username']
+        email = request.form['email']
+        password = request.form['password']
+
+        if username and email and password:
+            hashed_password = generate_password_hash(password)
+            mongo.db.users.update_one(
+                {'username': username},
+                {'$set': {'email': email, 'password': hashed_password}}
+            )
+            response = jsonify({'message': 'User Updated Successfully'})
+            response.status_code = 200
+            return render_template('Home.html')
+   
+
+   
+
+    return render_template('profile.html')
+
 
 
 if __name__ == '__main__':
