@@ -103,9 +103,13 @@ def not_found(error = None):
     response.status_code = 404
     return response
 
-@app.route('/')
+@app.route('/Home')
 def index():
     return render_template('Home.html')
+
+@app.route('/')
+def getstart():
+    return render_template('login.html')
 
 @app.route('/success/<name>')
 def success(name):
