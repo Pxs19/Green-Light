@@ -10,16 +10,16 @@ Database no-sql(mongodb) ใช้ผ่าน mongoDB compass
 
 วิธีการรัน
 
-1. ลง requirement
+1. ลง requirement:
 pip install -r requirements.txt
 
-2. รัน virtualenv
+2. รัน virtualenv:
 .\venv\Scripts\activate
 
-3. cd ไปที่ path
+3. cd ไปที่ path:
 cd source
 
-4. รัน project
+4. รัน project:
 python app.py
 
 
