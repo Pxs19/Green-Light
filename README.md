@@ -5,8 +5,9 @@ Component of Code
 ใช้ flask python ในการสร้างซึ่งจะใช้วิธีการ rendertemplate ในการสร้างหน้าเว็บไซต์ และใช้ MongoDB เป็นฐานข้อมูล
 
 Front end ใช้ HTML, CSS
-Backend ใช้ Flask
-Database no-sql(mongodb) ใช้ผ่าน mongoDB compass
+Backend ใช้ Flaskช้
+Database no-sql(mongodb) ใช้ผ่าน mongoDB compass <ใช้ docker รัน mongo และใช้งานผ่าน mongodb compass -> ถ้าเกิดว่าเล่นไม่ได้ ต้องลง mongo dbcompass ก่อน>
+
 
 วิธีการรัน
 
